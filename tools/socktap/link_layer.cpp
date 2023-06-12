@@ -36,7 +36,7 @@ create_link_layer(boost::asio::io_service& io_service, const EthernetDevice& dev
         namespace ip = boost::asio::ip;
         boost::system::error_code error_code;
 
-        ip::address ip_address = ip::make_address("127.0.0.1", error_code);
+        ip::address ip_address = ip::address::from_string("127.0.0.1", error_code);
         uint16_t udp_port_tx = 8947;
         uint16_t udp_port_rx = udp_port_tx;
 
@@ -47,7 +47,7 @@ create_link_layer(boost::asio::io_service& io_service, const EthernetDevice& dev
         if(udp_unicast_split_data.size() == 4) {
 
             auto ip_address_str = udp_unicast_split_data[1];
-            ip_address = ip::make_address(ip_address_str, error_code);
+            ip_address = ip::address::from_string(ip_address_str, error_code);
             if (error_code)
             {
                 auto error = std::string("Error parsing ip when using link-layer udp-io");
