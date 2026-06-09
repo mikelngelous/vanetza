@@ -18,8 +18,11 @@ DataConfirm::ResultCode validate_data_request(const DataRequest& req, const MIB&
 {
     DataConfirm::ResultCode result = DataConfirm::ResultCode::Rejected_Unspecified;
 
-    // TODO: traffic class validation
-    if (req.maximum_lifetime > mib.itsGnMaxPacketLifetime) {
+    const auto supported_tcs = mib.vanetzaSupportedTcIds;
+    const auto tc_bit = std::uint64_t{1} << req.traffic_class.tc_id().raw();
+    if (supported_tcs != 0 && !(supported_tcs & tc_bit)) {
+        result = DataConfirm::ResultCode::Rejected_Unsupported_Traffic_Class;
+    } else if (req.maximum_lifetime > mib.itsGnMaxPacketLifetime) {
         result = DataConfirm::ResultCode::Rejected_Max_Lifetime;
     } else if (req.repetition && req.repetition->interval < mib.itsGnMinPacketRepetitionInterval) {
         result = DataConfirm::ResultCode::Rejected_Min_Repetition_Interval;

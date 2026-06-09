@@ -103,6 +103,8 @@ struct ManagementInformationBase
     Clock::duration vanetzaNeighbourFlagExpiry; /*< reset LocTE neighbour state without explicit updates */
     std::size_t vanetzaGbcMemoryCapacity; /*< do not pass up duplicate GBC packets (0 to disable this filter) */
     bool vanetzaGbcPassUpOutsideDestination; /*< pass up received GBC packets even when outside of destination area */
+    std::uint64_t vanetzaSupportedTcIds; /*< bitmask of supported TC IDs for traffic class validation;
+        bit N set means TC ID N is supported; value 0 means no restriction (all TC IDs 0-63 are supported) */
 };
 
 // This name is too clumsy to write it out every time

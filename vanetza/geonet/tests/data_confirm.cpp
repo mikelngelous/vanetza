@@ -76,6 +76,46 @@ TEST(DataConfirm, validate_payload) {
             DataConfirm::ResultCode::Accepted);
 }
 
+TEST(DataConfirm, validate_data_request_unsupported_traffic_class) {
+    MIB mib;
+    DataRequest req(mib);
+
+    // Default (mask=0): all traffic classes accepted, even unusual TC IDs
+    req.traffic_class.tc_id(42);
+    EXPECT_EQ(validate_data_request(req, mib),
+            DataConfirm::ResultCode::Accepted);
+
+    // Configure: only TC IDs {0} supported
+    mib.vanetzaSupportedTcIds = std::uint64_t{1} << 0;
+
+    req.traffic_class.tc_id(0);
+    EXPECT_EQ(validate_data_request(req, mib),
+            DataConfirm::ResultCode::Accepted);
+
+    req.traffic_class.tc_id(1);
+    EXPECT_EQ(validate_data_request(req, mib),
+            DataConfirm::ResultCode::Rejected_Unsupported_Traffic_Class);
+
+    // Configure: TC IDs {0, 1, 2} supported (typical ITS-G5 setup: DP0-DP2)
+    mib.vanetzaSupportedTcIds = (std::uint64_t{1} << 0) |
+                                (std::uint64_t{1} << 1) |
+                                (std::uint64_t{1} << 2);
+
+    req.traffic_class.tc_id(2);
+    EXPECT_EQ(validate_data_request(req, mib),
+            DataConfirm::ResultCode::Accepted);
+
+    req.traffic_class.tc_id(3);
+    EXPECT_EQ(validate_data_request(req, mib),
+            DataConfirm::ResultCode::Rejected_Unsupported_Traffic_Class);
+
+    // Clearing the mask (back to 0) restores accept-all behavior
+    mib.vanetzaSupportedTcIds = 0;
+    req.traffic_class.tc_id(63);
+    EXPECT_EQ(validate_data_request(req, mib),
+            DataConfirm::ResultCode::Accepted);
+}
+
 TEST(DataConfirm, xor_op) {
     DataConfirm a;
     EXPECT_EQ(a.result_code, DataConfirm::ResultCode::Accepted);
